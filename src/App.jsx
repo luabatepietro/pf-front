@@ -26,6 +26,10 @@ function App() {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const email = payload['https://musica-insper.com/email'];
       const userRoles = payload['https://musica-insper.com/roles'] || [];
+
+      console.log("Email do usuário:", email);
+      console.log("Roles do usuário:", userRoles); // <-- VERIFICA AQUI
+
       setRoles(userRoles);
 
       fetch('http://18.230.75.11:8080/artigos', {
@@ -74,7 +78,13 @@ function App() {
         'descricao': descricao,
         'prioridade': prioridade
       })
-    }).then(response => response.json())
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Erro ao cadastrar artigo.");
+        }
+        return response.json();
+      })
       .then(() => window.location.reload())
       .catch(error => alert(error));
   }
@@ -90,54 +100,52 @@ function App() {
   }
 
   return (
-    <>
+    <div>
       <div>
-        <div>
-          <img src={user.picture} alt={user.name} />
-          <h2>{user.name}</h2>
-          <p>{user.email}</p>
-          <LogoutButton />
-        </div>
-
-        {roles.includes('ADMIN') && (
-          <div>
-            <h3>Criar artigo</h3>
-            Título: <input type='text' onChange={e => setTitulo(e.target.value)} /><br />
-            Descrição: <input type='text' onChange={e => setDescricao(e.target.value)} /><br />
-            Prioridade: <input type='number' onChange={e => setPrioridade(e.target.value)} /><br />
-            <button onClick={salvarartigo}>Cadastrar</button>
-          </div>
-        )}
-
-        <h3>Lista de artigos</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Descrição</th>
-              <th>Prioridade</th>
-              <th>Usuário</th>
-              {roles.includes('ADMIN') && <th>Ações</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {artigos.map((artigo, index) => (
-              <tr key={index}>
-                <td>{artigo.titulo}</td>
-                <td>{artigo.descricao}</td>
-                <td>{artigo.prioridade}</td>
-                <td>{artigo.email}</td>
-                {roles.includes('ADMIN') && (
-                  <td>
-                    <button onClick={() => excluirartigo(artigo.id)}>Excluir</button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <img src={user.picture} alt={user.name} />
+        <h2>{user.name}</h2>
+        <p>{user.email}</p>
+        <LogoutButton />
       </div>
-    </>
+
+      {roles.includes('ADMIN') && (
+        <div>
+          <h3>Criar artigo</h3>
+          Título: <input type='text' onChange={e => setTitulo(e.target.value)} /><br />
+          Descrição: <input type='text' onChange={e => setDescricao(e.target.value)} /><br />
+          Prioridade: <input type='number' onChange={e => setPrioridade(e.target.value)} /><br />
+          <button onClick={salvarartigo}>Cadastrar</button>
+        </div>
+      )}
+
+      <h3>Lista de artigos</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Descrição</th>
+            <th>Prioridade</th>
+            <th>Usuário</th>
+            {roles.includes('ADMIN') && <th>Ações</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {artigos.map((artigo, index) => (
+            <tr key={index}>
+              <td>{artigo.titulo}</td>
+              <td>{artigo.descricao}</td>
+              <td>{artigo.prioridade}</td>
+              <td>{artigo.email}</td>
+              {roles.includes('ADMIN') && (
+                <td>
+                  <button onClick={() => excluirartigo(artigo.id)}>Excluir</button>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
